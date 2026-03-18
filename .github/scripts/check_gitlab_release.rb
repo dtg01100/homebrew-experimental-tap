@@ -18,7 +18,7 @@ class GitLabReleaseChecker
   end
 
   def fetch_latest_release
-    encoded_path = ERB::Util.url_encode(@project_path)
+    encoded_path = URI.encode_www_form_component(@project_path)
     url = URI("https://gitlab.com/api/v4/projects/#{encoded_path}/releases/permalink/latest")
 
     http = Net::HTTP.new(url.host, url.port)
