@@ -279,27 +279,47 @@ jobs:
         with:
           ref: ${{ needs.update-formula.outputs.working-branch }}
 
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Download all bottles
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: bottle-*
           merge-multiple: true
-          path: .
+          path: /tmp/bottles
 
-      - name: Update formula with bottle SHAs
+      - name: Upload bottles to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.update-formula.outputs.version }}
         run: |
-          brew bottle --merge --write --no-commit ./*.bottle.json
+          if gh release view "bluefin-cli-${VERSION}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "bluefin-cli-${VERSION}" /tmp/bottles/*.bottle.tar.gz --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "bluefin-cli-${VERSION}" /tmp/bottles/*.bottle.tar.gz \
+              --title "bluefin-cli ${VERSION} bottles" \
+              --notes "Bottles for bluefin-cli ${VERSION}" \
+              --repo "$GITHUB_REPOSITORY"
+          fi
 
-      - name: Commit bottle updates
-        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
         with:
-          message: 'chore: add bluefin-cli bottles for ${{ needs.update-formula.outputs.version }}'
-          push: 'origin HEAD'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update formula and commit to PR branch
+        env:
+          VERSION: ${{ needs.update-formula.outputs.version }}
+          BRANCH: ${{ needs.update-formula.outputs.branch }}
+        run: |
+          cp /tmp/bottles/*.bottle.json .
+          # setup-homebrew may have switched HEAD away from the PR branch; restore it
+          git fetch origin "${BRANCH}"
+          git checkout "${BRANCH}"
+          brew bottle --merge --write --no-commit ./*.bottle.json
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add Formula/bluefin-cli.rb
+          git diff --staged --quiet || git commit -m "chore: add bluefin-cli bottles for ${VERSION}"
+          git push origin "${BRANCH}"
 
   upload-bottles-to-release:
     needs: [update-formula, build-bottles, build-darwin-bottles]
