@@ -299,6 +299,7 @@ jobs:
         uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
         with:
           message: 'chore: add bluefin-cli bottles for ${{ needs.update-formula.outputs.version }}'
+          push: 'origin HEAD'
 
   upload-bottles-to-release:
     needs: [update-formula, build-bottles, build-darwin-bottles]
