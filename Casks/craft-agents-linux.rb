@@ -1,6 +1,6 @@
 cask "craft-agents-linux" do
-  version "0.8.2"
-  sha256 "c391e37dc106b92818c2cfaa8d55af1c672a1870d87ac8a0def062dae3d9cfa2"
+  version "0.10.0"
+  sha256 "18948f74a2a3c86f091e2c020b1c53252a444e87c3c45e8e15dd89e02d541d1c"
 
   url "https://github.com/lukilabs/craft-agents-oss/releases/download/v#{version}/Craft-Agents-#{version}-linux-x64.AppImage"
   name "Craft Agents"
@@ -27,7 +27,8 @@ cask "craft-agents-linux" do
     icons_dir = "#{Dir.home}/.local/share/icons/hicolor/512x512/apps"
     apps_dir = "#{Dir.home}/.local/share/applications"
     FileUtils.mkdir_p(icons_dir)
-    FileUtils.cp("#{staged_path}/squashfs-root/usr/share/icons/hicolor/512x512/apps/@craft-agentelectron.png", icons_dir)
+    FileUtils.cp("#{staged_path}/squashfs-root/usr/share/icons/hicolor/512x512/apps/@craft-agentelectron.png",
+                 icons_dir)
     FileUtils.cp("#{staged_path}/squashfs-root/@craft-agentelectron.desktop", apps_dir)
     desktop_path = "#{apps_dir}/@craft-agentelectron.desktop"
     if File.exist?(desktop_path)
