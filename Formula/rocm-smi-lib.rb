@@ -11,6 +11,12 @@ class RocmSmiLib < Formula
     strategy :github_tag
   end
 
+  bottle do
+    root_url "https://github.com/ublue-os/homebrew-experimental-tap/releases/download/rocm-smi-lib-7.2.4"
+    sha256 cellar: :any, arm64_linux:  "88a5bac639b69a09172d59c4136ee0f17a7073f1cde722672fd66c990b1a5b5c"
+    sha256 cellar: :any, x86_64_linux: "1af2128b2722461814fae449f00825ccf91416f21f08632324f2cd366764575f"
+  end
+
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
   depends_on "libdrm"
